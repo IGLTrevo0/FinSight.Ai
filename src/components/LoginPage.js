@@ -1,32 +1,64 @@
 // src/components/LoginPage.js
+import { supabase } from '../supabaseClient';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+const handleSignUp = async (e) => {
+  e.preventDefault();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    
-    if (email && password) {
-      localStorage.setItem('user', email);
-      navigate('/upload');
-    } else {
-      alert('Please enter email and password');
-    }
-  };
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  console.log("signup result:", data, error);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  if (data?.user) {
+    localStorage.setItem("user", data.user.id);
+    alert("Signup successful! Check your email.");
+    navigate("/upload");
+  }
+};
 
   const handleGoogleLogin = () => {
     localStorage.setItem('user', 'google-user@example.com');
     navigate('/upload');
   };
+  const handleLogin = async (e) => {
+  e.preventDefault();
 
-  const handleSignUp = () => {
-    navigate('/upload');
-  };
+  console.log("LOGIN ATTEMPT:", { email, password });
+
+  if (!email || !password) {
+    alert("Email or password is empty");
+    return;
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  console.log("login result:", data, error);
+
+  if (data?.user) {
+    localStorage.setItem("user", data.user.id);
+    navigate("/upload");
+  }
+};
+
+
 
   return (
     <div className="login-page">
@@ -180,8 +212,12 @@ function LoginPage() {
           </button>
 
           <p className="signup-link">
-            Don't have an account? <span onClick={handleSignUp} className="link-text">Sign up</span>
-          </p>
+  Don't have an account?
+  <button type="button" onClick={handleSignUp} className="link-text">
+    Sign up
+  </button>
+</p>
+
         </div>
       </div>
     </div>
