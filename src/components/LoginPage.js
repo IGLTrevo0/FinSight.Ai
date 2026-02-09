@@ -31,31 +31,30 @@ const handleSignUp = async (e) => {
   }
 };
 
-  const handleGoogleLogin = () => {
-    localStorage.setItem('user', 'google-user@example.com');
-    navigate('/upload');
-  };
-  const handleLogin = async (e) => {
+  const handleGoogleLogin = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  if (error) alert(error.message);
+};
+
+ const handleLogin = async (e) => {
   e.preventDefault();
-
-  console.log("LOGIN ATTEMPT:", { email, password });
-
-  if (!email || !password) {
-    alert("Email or password is empty");
-    return;
-  }
+  
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  console.log("login result:", data, error);
-
-  if (data?.user) {
-    localStorage.setItem("user", data.user.id);
-    navigate("/upload");
+  if (error) {
+    console.error(error.message);
+    alert(error.message);
+    return;
   }
+
+  console.log('Logged in:', data);
+  navigate('/upload'); // or dashboard
 };
 
 
@@ -189,6 +188,7 @@ const handleSignUp = async (e) => {
             </div>
             
             <button type="submit" className="btn-signin">
+
               Sign In
               <svg className="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="5" y1="12" x2="19" y2="12" />
