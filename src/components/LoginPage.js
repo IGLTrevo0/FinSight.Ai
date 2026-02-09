@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
- 
   const handleLogin = (e) => {
     e.preventDefault();
     
@@ -19,27 +19,72 @@ function LoginPage() {
     }
   };
 
- 
   const handleGoogleLogin = () => {
-    // In production, this would use Google OAuth
     localStorage.setItem('user', 'google-user@example.com');
     navigate('/upload');
   };
 
-  // Navigate to sign up (for demo, just go to upload)
   const handleSignUp = () => {
     navigate('/upload');
   };
 
   return (
     <div className="login-page">
-      {/* Left Side - Welcome Message */}
+      {/* Left Side - Animated Background */}
       <div className="login-left">
+        {/* Animated Background Elements */}
+        <div className="bg-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+          <div className="shape shape-4"></div>
+          <div className="shape shape-5"></div>
+        </div>
+
+        {/* Grid Pattern Overlay */}
+        <div className="grid-pattern"></div>
+
+        {/* Content */}
         <div className="welcome-content">
-          <h1 className="welcome-title">FinSight.AI</h1>
+          <div className="brand-logo">
+            <div className="logo-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <span className="brand-name">FinSight.AI</span>
+          </div>
+          
+          <h1 className="welcome-title">
+            Financial Intelligence,
+            <span className="gradient-text"> Simplified</span>
+          </h1>
+          
           <p className="welcome-subtitle">
-            Log in to analyze your financial documents in seconds.
+            Log in to analyze your financial documents in seconds with AI-powered insights.
           </p>
+
+          {/* Feature List */}
+          <div className="feature-list">
+            <div className="feature-item">
+              <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>Instant document analysis</span>
+            </div>
+            <div className="feature-item">
+              <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>Cross-document insights</span>
+            </div>
+            <div className="feature-item">
+              <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>Smart categorization</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -47,37 +92,81 @@ function LoginPage() {
       <div className="login-right">
         <div className="login-form-container">
           <h2 className="form-title">Login</h2>
+          <p className="form-subtitle">Welcome back! Please enter your details.</p>
           
           <form onSubmit={handleLogin}>
             <div className="form-group">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="form-input"
-                required
-              />
+              <label className="form-label">Email</label>
+              <div className="input-wrapper">
+                <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="form-input"
+                  required
+                />
+              </div>
             </div>
             
             <div className="form-group">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                className="form-input"
-                required
-              />
+              <label className="form-label">Password</label>
+              <div className="input-wrapper">
+                <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="form-input"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="form-options">
+              <label className="checkbox-wrapper">
+                <input type="checkbox" />
+                <span className="checkbox-label">Remember me</span>
+              </label>
+              <a href="#" className="forgot-link">Forgot password?</a>
             </div>
             
             <button type="submit" className="btn-signin">
               Sign In
+              <svg className="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </button>
           </form>
 
           <div className="divider">
-            <span>or</span>
+            <span>or continue with</span>
           </div>
 
           <button onClick={handleGoogleLogin} className="btn-google">

@@ -12,13 +12,11 @@ function UploadPage() {
 
   const N8N_UPLOAD_WEBHOOK = 'https://n8n.srv1333057.hstgr.cloud/webhook-test/finsight-upload';
 
-  // Handle file selection via input
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     addFiles(selectedFiles);
   };
 
-  // Add files with validation
   const addFiles = (newFiles) => {
     const combined = [...files, ...newFiles];
     
@@ -30,7 +28,6 @@ function UploadPage() {
     setFiles(combined);
   };
 
-  // Handle drag events
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -42,7 +39,6 @@ function UploadPage() {
     }
   };
 
-  // Handle drop
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -54,17 +50,14 @@ function UploadPage() {
     }
   };
 
-  // Trigger file input click
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Remove a file from the list
   const removeFile = (index) => {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  // Upload files to n8n
   const uploadFiles = async () => {
     if (files.length === 0) {
       alert('Please select files first');
@@ -72,7 +65,7 @@ function UploadPage() {
     }
 
     setUploading(true);
-    setUploadStatus('Uploading and processing files...');
+    setUploadStatus('Processing your documents...');
 
     try {
       const formData = new FormData();
@@ -95,7 +88,7 @@ function UploadPage() {
 
       const result = await response.json();
       
-      setUploadStatus('✅ Files processed successfully! Redirecting to dashboard...');
+      setUploadStatus('✅ Success! Analyzing documents with AI...');
       
       setTimeout(() => {
         navigate('/dashboard');
@@ -110,18 +103,31 @@ function UploadPage() {
   };
 
   return (
-    <div className="upload-page">
-      <div className="upload-content">
-        <h1 className="upload-title">Upload documents</h1>
-        <p className="upload-subtitle">Invoices, receipts, bills (max 20 files)</p>
+    <div className="upload-page-v2">
+      {/* Animated Background */}
+      <div className="upload-bg-shapes">
+        <div className="upload-shape upload-shape-1"></div>
+        <div className="upload-shape upload-shape-2"></div>
+        <div className="upload-shape upload-shape-3"></div>
+      </div>
 
-        {/* Drag & Drop Zone */}
+      <div className="upload-grid-pattern"></div>
+
+      <div className="upload-container-v2">
+        {/* Header */}
+        <div className="upload-header-v2">
+          <h1 className="upload-title-v2">Upload documents</h1>
+          <p className="upload-subtitle-v2">Invoices, receipts, bills (max 20 files)</p>
+        </div>
+
+        {/* Main Upload Area */}
         <div
-          className={`dropzone ${dragActive ? 'active' : ''}`}
+          className={`dropzone-v2 ${dragActive ? 'active' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          onClick={handleBrowseClick}
         >
           <input
             ref={fileInputRef}
@@ -133,59 +139,68 @@ function UploadPage() {
             disabled={uploading}
           />
           
-          <div className="dropzone-content">
-            <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          <div className="dropzone-icon-v2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            
-            <p className="dropzone-text">
-              Drag & drop files here
-            </p>
-            <p className="dropzone-or">or</p>
-            <button 
-              type="button" 
-              onClick={handleBrowseClick} 
-              className="btn-browse"
-              disabled={uploading}
-            >
-              Browse files
-            </button>
           </div>
+          
+          <p className="dropzone-main-text">Drag & drop files here</p>
+          <p className="dropzone-or-text">or</p>
+          
+          <button 
+            type="button" 
+            className="btn-browse-v2"
+            disabled={uploading}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleBrowseClick();
+            }}
+          >
+            Browse files
+          </button>
         </div>
 
-        {/* File List */}
+        {/* File List Preview */}
         {files.length > 0 && (
-          <div className="files-preview">
-            <div className="files-header">
+          <div className="files-preview-v2">
+            <div className="files-header-v2">
               <h3>Selected Files ({files.length}/20)</h3>
               <button 
                 onClick={() => setFiles([])} 
-                className="btn-clear"
+                className="btn-clear-v2"
                 disabled={uploading}
               >
                 Clear all
               </button>
             </div>
             
-            <div className="files-grid">
+            <div className="files-list-v2">
               {files.map((file, index) => (
-                <div key={index} className="file-item">
-                  <div className="file-info">
-                    <svg className="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                      <polyline points="13 2 13 9 20 9" />
-                    </svg>
-                    <div className="file-details">
-                      <p className="file-name">{file.name}</p>
-                      <p className="file-size">{(file.size / 1024).toFixed(2)} KB</p>
+                <div key={index} className="file-card-v2">
+                  <div className="file-info-v2">
+                    <div className="file-icon-v2">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                      </svg>
+                    </div>
+                    <div className="file-text-v2">
+                      <p className="file-name-v2">{file.name}</p>
+                      <p className="file-size-v2">{(file.size / 1024).toFixed(2)} KB</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => removeFile(index)} 
-                    className="btn-remove"
+                    className="btn-remove-v2"
                     disabled={uploading}
                   >
-                    ×
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </button>
                 </div>
               ))}
@@ -197,11 +212,11 @@ function UploadPage() {
         <button
           onClick={uploadFiles}
           disabled={uploading || files.length === 0}
-          className="btn-upload"
+          className="btn-upload-v2"
         >
           {uploading ? (
             <>
-              <span className="spinner"></span>
+              <span className="spinner-v2"></span>
               Processing...
             </>
           ) : (
@@ -211,13 +226,13 @@ function UploadPage() {
 
         {/* Status Message */}
         {uploadStatus && (
-          <div className={`upload-status ${uploadStatus.includes('✅') ? 'success' : uploadStatus.includes('❌') ? 'error' : ''}`}>
+          <div className={`upload-status-v2 ${uploadStatus.includes('✅') ? 'success' : uploadStatus.includes('❌') ? 'error' : ''}`}>
             {uploadStatus}
           </div>
         )}
 
         {/* Supported Formats */}
-        <p className="supported-formats">
+        <p className="supported-formats-v2">
           Supported formats: PDF, JPG, PNG, Excel, Word
         </p>
       </div>
