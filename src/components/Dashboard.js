@@ -1,4 +1,4 @@
-// src/components/Dashboard.js
+// src/components/Dashboard.js - ENHANCED VERSION
 import React, { useState } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
@@ -40,6 +40,7 @@ function Dashboard() {
       }
 
       const data = await response.json();
+      console.log('Received data from n8n:', data); // Debug log
       setSummary(data);
 
     } catch (err) {
@@ -69,7 +70,21 @@ function Dashboard() {
         titleColor: '#ffffff',
         bodyColor: '#ffffff',
         borderColor: 'rgba(99, 102, 241, 0.5)',
-        borderWidth: 1
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += '$' + context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
       }
     },
     scales: {
@@ -94,6 +109,9 @@ function Dashboard() {
           color: 'rgba(255, 255, 255, 0.7)',
           font: {
             size: 11
+          },
+          callback: function(value) {
+            return '$' + value.toLocaleString();
           }
         }
       }
@@ -120,17 +138,26 @@ function Dashboard() {
         titleColor: '#ffffff',
         bodyColor: '#ffffff',
         borderColor: 'rgba(99, 102, 241, 0.5)',
-        borderWidth: 1
+        borderWidth: 1,
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+          }
+        }
       }
     }
   };
 
-  // Prepare chart data
+  // Prepare chart data with fallback for different data structures
   const vendorChartData = summary?.vendorTotals ? {
-    labels: summary.vendorTotals.map(v => v.vendor),
+    labels: summary.vendorTotals.map(v => v.vendor || v.name || 'Unknown'),
     datasets: [{
       label: 'Total Spent ($)',
-      data: summary.vendorTotals.map(v => v.total),
+      data: summary.vendorTotals.map(v => v.total || v.amount || 0),
       backgroundColor: 'rgba(99, 102, 241, 0.6)',
       borderColor: 'rgba(99, 102, 241, 1)',
       borderWidth: 2,
@@ -139,10 +166,10 @@ function Dashboard() {
   } : null;
 
   const dateChartData = summary?.dateTrends ? {
-    labels: summary.dateTrends.map(d => d.date),
+    labels: summary.dateTrends.map(d => d.date || d.period || 'N/A'),
     datasets: [{
       label: 'Daily Spending ($)',
-      data: summary.dateTrends.map(d => d.amount),
+      data: summary.dateTrends.map(d => d.amount || d.value || 0),
       borderColor: 'rgba(168, 85, 247, 1)',
       backgroundColor: 'rgba(168, 85, 247, 0.1)',
       borderWidth: 3,
@@ -157,9 +184,9 @@ function Dashboard() {
   } : null;
 
   const categoryChartData = summary?.categoryBreakdown ? {
-    labels: summary.categoryBreakdown.map(c => c.category),
+    labels: summary.categoryBreakdown.map(c => c.category || c.name || 'Other'),
     datasets: [{
-      data: summary.categoryBreakdown.map(c => c.amount),
+      data: summary.categoryBreakdown.map(c => c.amount || c.value || 0),
       backgroundColor: [
         'rgba(99, 102, 241, 0.8)',
         'rgba(168, 85, 247, 0.8)',
@@ -167,6 +194,8 @@ function Dashboard() {
         'rgba(251, 146, 60, 0.8)',
         'rgba(34, 197, 94, 0.8)',
         'rgba(59, 130, 246, 0.8)',
+        'rgba(245, 158, 11, 0.8)',
+        'rgba(239, 68, 68, 0.8)',
       ],
       borderColor: '#1a1f35',
       borderWidth: 2,
@@ -241,7 +270,7 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Total Spending</p>
-                  <p className="metric-number">${summary.totalSpending?.toLocaleString() || 0}</p>
+                  <p className="metric-number">${(summary.totalSpending || 0).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -253,7 +282,7 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Total Tax</p>
-                  <p className="metric-number">${summary.totalTax?.toLocaleString() || 0}</p>
+                  <p className="metric-number">${(summary.totalTax || 0).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -279,7 +308,9 @@ function Dashboard() {
                 Executive Summary
               </h2>
               <div className="summary-text">
-                <p>{summary.textSummary || 'Your AI-generated executive summary will appear here. This will include key insights about spending patterns, top vendors, and notable trends across all uploaded financial documents.'}</p>
+                <p style={{ whiteSpace: 'pre-wrap' }}>
+                  {summary.textSummary || summary.human_summary || 'Your AI-generated executive summary will appear here. This will include key insights about spending patterns, top vendors, and notable trends across all uploaded financial documents.'}
+                </p>
               </div>
             </div>
 
@@ -346,12 +377,12 @@ function Dashboard() {
                           <div 
                             className="category-color" 
                             style={{ 
-                              backgroundColor: categoryChartData.datasets[0].backgroundColor[idx] 
+                              backgroundColor: categoryChartData.datasets[0].backgroundColor[idx % categoryChartData.datasets[0].backgroundColor.length] 
                             }}
                           ></div>
-                          <span className="category-text">{cat.category}</span>
+                          <span className="category-text">{cat.category || cat.name || 'Other'}</span>
                         </div>
-                        <span className="category-value">${cat.amount.toLocaleString()}</span>
+                        <span className="category-value">${(cat.amount || cat.value || 0).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>

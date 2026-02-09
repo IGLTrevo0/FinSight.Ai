@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient'; // Your existing Supabase client
-import './ProfilePage.css';
+import '../styles.css';
 
 
 function ProfilePage() {
@@ -489,7 +489,6 @@ function ProfilePage() {
         </div>
       </div>
     </div>
-  );
-}
-
+  )
+};
 export default ProfilePage;
