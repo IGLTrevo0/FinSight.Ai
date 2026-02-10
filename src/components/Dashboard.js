@@ -1,58 +1,121 @@
 // src/components/Dashboard.js - ENHANCED VERSION
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 
-// Register Chart.js components
+// Register Chart.js components for rendering charts
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
 
 function Dashboard() {
-  const [summary, setSummary] = useState(() => {
-  const saved = localStorage.getItem("finsight_result");
-  return saved ? JSON.parse(saved) : null;
-});
+  // Button to clear summary data from localStorage and state
+  <button
+  onClick={() => {
+    localStorage.removeItem("finsight_result");
+    setSummary(null);
+  }}
+  className="btn-generate"
+>
+  Clear Summary
+</button>
+  // Hook for navigation between pages
+  const navigate = useNavigate();
+  // State to hold the summary data from analysis
+  const [summary, setSummary] = useState(null);
+  // Effect to load summary from localStorage on mount
+  useEffect(() => {
+  const summaryText = loadSummaryFromLocalStorage();
+
+  if (summaryText) {
+    setSummary({ summary: summaryText });
+    setError(""); // remove red error banner
+  }
+}, []);
+  // Effect to load and parse summary data from localStorage
+  useEffect(() => {
+     
+  try {
+    const saved = localStorage.getItem("finsight_result");
+    if (saved) {
+      setSummary(JSON.parse(saved));
+    }
+  } catch (e) {
+    console.error("Failed to read finsight_result from localStorage:", e);
+  }
+}, []);
+  // State for loading indicator during API calls
   const [loading, setLoading] = useState(false);
+  // State for error messages
   const [error, setError] = useState('');
 
-  const N8N_SUMMARY_WEBHOOK = 'https://n8n.srv1333057.hstgr.cloud/webhook-test/finsight-summary';
 
-  // Fetch AI summary from n8n
-  const fetchSummary = async () => {
-    setLoading(true);
-    setError('');
+  // Webhook URL for N8N integration
+  const N8N_WEBHOOK = 'https://n8n.srv1333057.hstgr.cloud/webhook/finsight-upload';
 
-    try {
-      const response = await fetch(N8N_SUMMARY_WEBHOOK, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: localStorage.getItem('user') || 'demo-user',
-          queries: [
-            'total_by_vendor',
-            'total_tax',
-            'date_wise_trend',
-            'category_breakdown'
-          ]
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch summary');
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const loadStoredData = () => {
+      try {
+        const storedData = localStorage.getItem("finsight_result");
+        
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          console.log("Loaded data from localStorage:", parsedData);
+          setSummary(parsedData);
+        } else {
+          console.log("No stored data found in localStorage");
+        }
+      } catch (err) {
+        console.error("Error loading stored data:", err);
+        setError("Error loading saved data");
       }
+    };
 
-      const data = await response.json();
-      console.log('Received data from n8n:', data); // Debug log
-      setSummary(data);
+    loadStoredData();
+  }, []);
 
-    } catch (err) {
-      console.error('Summary error:', err);
-      setError('Failed to generate summary. Please try again.');
-    } finally {
-      setLoading(false);
+// Function to fetch summary data from the N8N webhook
+const fetchSummary = async () => {
+  // Set loading state to true
+  setLoading(true);
+  // Clear any previous error messages
+  setError('');
+
+  try {
+    // Make POST request to N8N webhook for summary
+    const response = await fetch('https://n8n.srv1333057.hstgr.cloud/webhook-test/finsight-upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: "get-summary"
+      })
+    });
+
+    // Check if response is successful
+    if (!response.ok) {
+      throw new Error('Failed to fetch summary');
     }
-  };
+
+    // Parse JSON response
+    const data = await response.json();
+    console.log('Got data:', data);
+    
+    // Update state with fetched data
+    setSummary(data);
+    // Store data in localStorage for persistence
+    localStorage.setItem("finsight_result", JSON.stringify(data));
+
+  } catch (err) {
+    console.error('Error:', err);
+    // Set error message for user
+    setError('Failed to generate summary. Please try again.');
+  } finally {
+    // Always set loading to false when done
+    setLoading(false);
+  }
+};
 
   // Chart configurations with dark theme
   const chartOptions = {
@@ -204,6 +267,30 @@ function Dashboard() {
       borderWidth: 2,
     }],
   } : null;
+  function loadSummaryFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem("finsight_result");
+
+    if (!raw) {
+      console.log("No summary in localStorage");
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    console.log("Loaded summary from localStorage:", parsed);
+
+    // Handle all possible shapes
+    if (typeof parsed === "string") return parsed;
+    if (parsed.summary) return parsed.summary;
+    if (parsed.human_summary) return parsed.human_summary;
+    if (parsed.textSummary) return parsed.textSummary;
+
+    return JSON.stringify(parsed, null, 2);
+  } catch (err) {
+    console.error("Failed to load summary:", err);
+    return "Error reading summary from local storage";
+  }
+}
 
   return (
     <div className="dashboard-page">
@@ -212,28 +299,42 @@ function Dashboard() {
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">Financial Intelligence Dashboard</h1>
-            <p className="dashboard-subtitle">AI-powered insights from your documents</p>
+            <p className="dashboard-subtitle">
+              {summary ? 'AI-powered insights from your documents' : 'Upload documents to get started'}
+            </p>
           </div>
           
-          <button
-            onClick={fetchSummary}
-            disabled={loading}
-            className="btn-generate"
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <svg className="generate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-                Generate AI Summary
-              </>
-            )}
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/upload')}
+              className="btn-secondary"
+            >
+              <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px' }}>
+                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Upload More
+            </button>
+            
+            <button
+              onClick={fetchSummary}
+              disabled={loading}
+              className="btn-generate"
+            >
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <svg className="generate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  Refresh Analysis
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Error Message */}
@@ -247,12 +348,12 @@ function Dashboard() {
             {error}
           </div>
         )}
-
+      
         {/* Summary Results */}
         {summary && (
           <div className="dashboard-results">
             {/* Key Metrics Cards */}
-            <div className="metrics-row">
+            {/* <div className="metrics-row">
               <div className="metric-box">
                 <div className="metric-icon-wrapper purple">
                   <svg className="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -261,7 +362,7 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Total Documents</p>
-                  <p className="metric-number">{summary.totalDocuments || 0}</p>
+                  <p className="metric-number">{summary.totalDocuments || summary.total_documents || 0}</p>
                 </div>
               </div>
 
@@ -273,11 +374,11 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Total Spending</p>
-                  <p className="metric-number">${(summary.totalSpending || 0).toLocaleString()}</p>
+                  <p className="metric-number">${(summary.totalSpending || summary.total_spending || 0).toLocaleString()}</p>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="metric-box">
+              {/* <div className="metric-box">
                 <div className="metric-icon-wrapper orange">
                   <svg className="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -285,7 +386,7 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Total Tax</p>
-                  <p className="metric-number">${(summary.totalTax || 0).toLocaleString()}</p>
+                  <p className="metric-number">${(summary.totalTax || summary.total_tax || 0).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -297,10 +398,10 @@ function Dashboard() {
                 </div>
                 <div className="metric-content">
                   <p className="metric-label">Unique Vendors</p>
-                  <p className="metric-number">{summary.uniqueVendors || 0}</p>
+                  <p className="metric-number">{summary.uniqueVendors || summary.unique_vendors || 0}</p>
                 </div>
-              </div>
-            </div>
+              </div> */}
+            {/* </div> */}
 
             {/* Executive Summary */}
             <div className="summary-card-large">
@@ -312,11 +413,17 @@ function Dashboard() {
               </h2>
               <div className="summary-text">
                 <p style={{ whiteSpace: 'pre-wrap' }}>
-                  {summary.textSummary || summary.human_summary || 'Your AI-generated executive summary will appear here. This will include key insights about spending patterns, top vendors, and notable trends across all uploaded financial documents.'}
+                  
+                  {(summary?.textSummary ||
+  summary?.human_summary ||
+  summary?.summary ||
+  summary?.summary?.textSummary ||
+  summary?.summary?.human_summary ||
+  'Your AI-generated executive summary will appear here.')}
                 </p>
               </div>
             </div>
-
+                
             {/* Charts Grid */}
             <div className="charts-grid">
               {/* Vendor Chart */}
@@ -399,10 +506,33 @@ function Dashboard() {
         {!summary && !loading && !error && (
           <div className="empty-state">
             <svg className="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
-            <h3 className="empty-title">No Data Yet</h3>
-            <p className="empty-text">Click "Generate AI Summary" to analyze your uploaded documents</p>
+            <h3 className="empty-title">No Documents Uploaded Yet</h3>
+            <p className="empty-text">Upload your financial documents to see AI-powered insights and analytics</p>
+            <button
+              onClick={() => navigate('/upload')}
+              className="btn-upload-cta"
+              style={{ 
+                marginTop: '20px',
+                padding: '12px 24px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px' }}>
+                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Upload Documents
+            </button>
           </div>
         )}
       </div>

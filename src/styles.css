@@ -809,7 +809,39 @@ body {
 .btn-nav-secondary span {
   color: rgba(255, 255, 255, 0.9);
 }
+/* Summary Card - iOS Glassmorphism */
+.summary-card-large {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
 
+.summary-card-large:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.summary-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.summary-text p {
+  margin: 0;
+}
 /* Profile Button - iOS Glass */
 .btn-profile-nav {
   display: flex;
@@ -1582,7 +1614,10 @@ body {
 /* ========================================
    DASHBOARD PAGE - iOS GLASS BLACK THEME
    ======================================== */
-
+.dashboard-container {
+  background: #000000; /* or whatever dark color you want */
+  min-height: 100vh;
+}
 .dashboard-page {
   min-height: 100vh;
   background: #000000;
@@ -1670,6 +1705,47 @@ body {
 .generate-icon {
   width: 20px;
   height: 20px;
+}
+
+/* Secondary Button - iOS Glass Style */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  flex-shrink: 0;
 }
 
 .dashboard-error {
@@ -2753,6 +2829,7 @@ body {
   .upload-title-v2 {
     font-size: 36px;
   }
+  
 
   .dropzone-v2 {
     padding: 60px 24px;
@@ -2796,4 +2873,5 @@ body {
   .upload-top-bar {
     height: auto;
   }
+}
 }

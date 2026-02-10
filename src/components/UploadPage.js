@@ -3,40 +3,53 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles.css';
 
+// Main upload page component for file selection and upload
 function UploadPage() {
+  // State for loading and result (unused in current implementation)
   const [loading, setLoading] = useState(false);
-const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null);
 
+  // State for managing selected files
   const [files, setFiles] = useState([]);
+  // State for upload progress
   const [uploading, setUploading] = useState(false);
+  // State for upload status messages
   const [uploadStatus, setUploadStatus] = useState('');
+  // State for drag and drop active state
   const [dragActive, setDragActive] = useState(false);
+  // Ref for file input element
   const fileInputRef = useRef(null);
+  // Ref for about section
   const aboutSectionRef = useRef(null);
+  // Hook for navigation
   const navigate = useNavigate();
 
+  // N8N webhook URL for file upload
   const N8N_UPLOAD_WEBHOOK = 'https://n8n.srv1333057.hstgr.cloud/webhook-test/finsight-upload';
 
+  // Handle file selection from input
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     addFiles(selectedFiles);
   };
 
+  // Add new files to the existing file list
   const addFiles = (newFiles) => {
     const combined = [...files, ...newFiles];
-    
+
     if (combined.length > 20) {
       alert('Maximum 20 files allowed');
       return;
     }
-    
+
     setFiles(combined);
   };
 
+  // Handle drag events for drag and drop
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
     } else if (e.type === "dragleave") {
@@ -44,6 +57,7 @@ const [result, setResult] = useState(null);
     }
   };
 
+  // Handle file drop event
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,18 +69,22 @@ const [result, setResult] = useState(null);
     }
   };
 
+  // Trigger file input click for browse functionality
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
   };
 
+  // Remove a file from the selected files list
   const removeFile = (index) => {
     setFiles(files.filter((_, i) => i !== index));
   };
 
+  // Upload files to N8N webhook
   const uploadFiles = async () => {
     if (!files.length) return alert('No files selected');
 
     setUploading(true);
+    setUploadStatus('📤 Uploading files...');
 
     const formData = new FormData();
 
@@ -88,21 +106,24 @@ const [result, setResult] = useState(null);
 
       if (!response.ok) {
         throw new Error('Upload failed');
-        
       }
-      const data = await response.json();
-    console.log("N8N returned:", data);
 
-    localStorage.setItem(
-      "finsight_result",
-      JSON.stringify(data));
-      
+      const data = await response.json();
+      console.log("N8N returned:", data);
+
+      // Store the complete response from n8n
+      localStorage.setItem("finsight_result", JSON.stringify(data));
+
+      // Also store upload metadata
+      localStorage.setItem("finsight_upload_time", new Date().toISOString());
+      localStorage.setItem("finsight_file_count", files.length);
 
       setUploadStatus('✅ Success! Analyzing documents with AI...');
 
+      // Navigate to dashboard after short delay
       setTimeout(() => {
         navigate('/dashboard');
-      }, 200);
+      }, 1000);
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -114,247 +135,15 @@ const [result, setResult] = useState(null);
 
   // Scroll to About Section
   const scrollToAbout = () => {
-    aboutSectionRef.current?.scrollIntoView({ 
+    aboutSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
   };
-  
-class BackgroundAnimations {
-  constructor() {
-    this.init();
-  }
-
-  init() {
-    this.createAnimatedOrbs();
-    this.createFloatingShapes();
-    this.createParticles();
-    this.createAnimatedLines();
-    this.createPulseRings();
-    this.createGlowSpots();
-  }
-
-  // Create container helper
-  createContainer(className) {
-    const container = document.createElement('div');
-    container.className = className;
-    return container;
-  }
-
-  // 1. Animated Gradient Orbs
-  createAnimatedOrbs() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const orbsContainer = this.createContainer('animated-orbs');
-    
-    for (let i = 1; i <= 4; i++) {
-      const orb = document.createElement('div');
-      orb.className = `orb orb-${i}`;
-      orbsContainer.appendChild(orb);
-    }
-
-    bgShapes.appendChild(orbsContainer);
-  }
-
-  // 2. Floating Geometric Shapes
-  createFloatingShapes() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const shapesContainer = this.createContainer('floating-shapes');
-
-    // Create squares
-    for (let i = 1; i <= 3; i++) {
-      const square = document.createElement('div');
-      square.className = `shape-element square square-${i}`;
-      shapesContainer.appendChild(square);
-    }
-
-    // Create circles
-    for (let i = 1; i <= 3; i++) {
-      const circle = document.createElement('div');
-      circle.className = `shape-element circle circle-${i}`;
-      shapesContainer.appendChild(circle);
-    }
-
-    // Create triangles
-    for (let i = 1; i <= 3; i++) {
-      const triangle = document.createElement('div');
-      triangle.className = `shape-element triangle triangle-${i}`;
-      shapesContainer.appendChild(triangle);
-    }
-
-    bgShapes.appendChild(shapesContainer);
-  }
-
-  // 3. Particle System
-  createParticles() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const particlesContainer = this.createContainer('particles-container');
-    const particleCount = 30;
-
-    for (let i = 0; i < particleCount; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      
-      // Random horizontal position
-      particle.style.left = `${Math.random() * 100}%`;
-      
-      // Random animation duration (15-30 seconds)
-      const duration = 15 + Math.random() * 15;
-      particle.style.animationDuration = `${duration}s`;
-      
-      // Random delay
-      particle.style.animationDelay = `${Math.random() * 10}s`;
-      
-      // Random drift value for horizontal movement
-      const drift = (Math.random() - 0.5) * 200;
-      particle.style.setProperty('--drift', `${drift}px`);
-      
-      // Random size variation
-      const size = 2 + Math.random() * 2;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      
-      particlesContainer.appendChild(particle);
-    }
-
-    bgShapes.appendChild(particlesContainer);
-  }
-
-  // 4. Animated Lines
-  createAnimatedLines() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const linesContainer = this.createContainer('animated-lines');
-
-    // Horizontal lines
-    for (let i = 1; i <= 3; i++) {
-      const line = document.createElement('div');
-      line.className = `line line-horizontal line-${i}`;
-      linesContainer.appendChild(line);
-    }
-
-    // Vertical lines
-    for (let i = 4; i <= 5; i++) {
-      const line = document.createElement('div');
-      line.className = `line line-vertical line-${i}`;
-      linesContainer.appendChild(line);
-    }
-
-    bgShapes.appendChild(linesContainer);
-  }
-
-  // 5. Pulse Rings
-  createPulseRings() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const ringsContainer = this.createContainer('pulse-rings');
-
-    for (let i = 1; i <= 3; i++) {
-      const ring = document.createElement('div');
-      ring.className = `pulse-ring ring-${i}`;
-      ringsContainer.appendChild(ring);
-    }
-
-    bgShapes.appendChild(ringsContainer);
-  }
-
-  // 6. Glow Spots
-  createGlowSpots() {
-    const bgShapes = document.querySelector('.upload-bg-shapes');
-    if (!bgShapes) return;
-
-    const glowContainer = this.createContainer('glow-spots');
-
-    for (let i = 1; i <= 4; i++) {
-      const spot = document.createElement('div');
-      spot.className = `glow-spot spot-${i}`;
-      glowContainer.appendChild(spot);
-    }
-
-    bgShapes.appendChild(glowContainer);
-  }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  new BackgroundAnimations();
-});
-
-// Also initialize if script loads after DOM
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  new BackgroundAnimations();
-}
-
-  if (!selectedFile) {
-    alert("Please select a file first");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const data = await fetchSummary(selectedFile);
-
-    setResult(data);
-
-    // save for dashboard
-    localStorage.setItem("finsight_result", JSON.stringify(data));
-
-  } catch (err) {
-    alert(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("https://n8n.srv1333057.hstgr.cloud/webhook-test/finsight-upload", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) throw new Error("Request failed: " + res.status);
-  return await res.json();
-}
-
 
   return (
- 
-   
     <div className="upload-page-v2">
       {/* Animated Background */}
-       <input
-      type="file"
-      onChange={(e) => setSelectedFile(e.target.files[0])}
-    />
-    <button
-  className="btn-generate"
-  onClick={uploadFiles}
-  disabled={uploading}
->
-  {uploading ? (
-    <>
-      <span className="spinner" />
-      Analyzing...
-    </>
-  ) : (
-    <>
-      <svg className="generate-icon" viewBox="0 0 24 24">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-      </svg>
-      Generate AI Summary
-    </>
-  )}
-</button>
-
       <div className="upload-bg-shapes">
         <div className="upload-shape upload-shape-1"></div>
         <div className="upload-shape upload-shape-2"></div>

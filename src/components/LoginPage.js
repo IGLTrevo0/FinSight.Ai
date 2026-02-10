@@ -3,59 +3,64 @@ import { supabase } from '../supabaseClient';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
+// Main login page component with authentication forms
 function LoginPage() {
+  // State for form inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  // Hook for navigation
   const navigate = useNavigate();
-const handleSignUp = async (e) => {
-  e.preventDefault();
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  // Handle user signup
+  const handleSignUp = async (e) => {
+    e.preventDefault();
 
-  console.log("signup result:", data, error);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+    console.log("signup result:", data, error);
 
-  if (data?.user) {
-    localStorage.setItem("user", data.user.id);
-    alert("Signup successful! Check your email.");
-    navigate("/upload");
-  }
-};
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
+    if (data?.user) {
+      localStorage.setItem("user", data.user.id);
+      alert("Signup successful! Check your email.");
+      navigate("/upload");
+    }
+  };
+
+  // Handle Google OAuth login
   const handleGoogleLogin = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-  });
-  if (error) alert(error.message);
-};
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) alert(error.message);
+  };
 
- const handleLogin = async (e) => {
-  e.preventDefault();
-  
+  // Handle email/password login
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    console.error(error.message);
-    alert(error.message);
-    return;
-  }
+    if (error) {
+      console.error(error.message);
+      alert(error.message);
+      return;
+    }
 
-  console.log('Logged in:', data);
-  navigate('/upload'); // or dashboard
-};
+    console.log('Logged in:', data);
+    navigate('/upload'); // or dashboard
+  };
 
 
 

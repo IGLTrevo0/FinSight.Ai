@@ -81,6 +81,7 @@ function ProfilePage() {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
+  // Handle saving profile changes
   const handleSaveProfile = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
@@ -109,6 +110,7 @@ function ProfilePage() {
     }
   };
 
+  // Handle password change
   const handleChangePassword = async () => {
     if (passwords.new !== passwords.confirm) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
@@ -141,6 +143,7 @@ function ProfilePage() {
     }
   };
 
+  // Handle email change
   const handleChangeEmail = async () => {
     if (!newEmail || !newEmail.includes('@')) {
       setMessage({ type: 'error', text: 'Please enter a valid email' });
