@@ -1,5 +1,5 @@
 // src/components/ProfilePage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient'; // Your existing Supabase client
 import '../styles.css';
@@ -38,15 +38,11 @@ function ProfilePage() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // Fetch user data on mount
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
+
       if (userError) throw userError;
       if (!user) {
         navigate('/login');
@@ -79,7 +75,11 @@ function ProfilePage() {
       setMessage({ type: 'error', text: 'Failed to load profile' });
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
 
   const handleSaveProfile = async () => {
     setSaving(true);

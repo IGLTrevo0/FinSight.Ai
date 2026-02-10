@@ -184,7 +184,7 @@ const handleSignUp = async (e) => {
                 <input type="checkbox" />
                 <span className="checkbox-label">Remember me</span>
               </label>
-              <a href="#" className="forgot-link">Forgot password?</a>
+              <button type="button" className="forgot-link">Forgot password?</button>
             </div>
             
             <button type="submit" className="btn-signin">
