@@ -7,7 +7,10 @@ import { Bar, Line, Doughnut } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
 
 function Dashboard() {
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState(() => {
+  const saved = localStorage.getItem("finsight_result");
+  return saved ? JSON.parse(saved) : null;
+});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

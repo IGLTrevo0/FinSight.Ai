@@ -6,7 +6,7 @@ import '../styles.css';
 function UploadPage() {
   const [loading, setLoading] = useState(false);
 const [result, setResult] = useState(null);
-const [selectedFile, setSelectedFile] = useState(null);
+
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -88,13 +88,21 @@ const [selectedFile, setSelectedFile] = useState(null);
 
       if (!response.ok) {
         throw new Error('Upload failed');
+        
       }
+      const data = await response.json();
+    console.log("N8N returned:", data);
+
+    localStorage.setItem(
+      "finsight_result",
+      JSON.stringify(data));
+      
 
       setUploadStatus('✅ Success! Analyzing documents with AI...');
 
       setTimeout(() => {
         navigate('/dashboard');
-      }, 2);
+      }, 200);
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -283,8 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   new BackgroundAnimations();
 }
-async function fetchSummary(file) {
-  const handleGenerate = async () => {
+
   if (!selectedFile) {
     alert("Please select a file first");
     return;
